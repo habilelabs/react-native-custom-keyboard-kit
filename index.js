@@ -9,6 +9,7 @@ import {
   AppRegistry,
   View,
   Text,
+  Platform
 } from 'react-native';
 
 const { CustomKeyboardKit} = NativeModules;
@@ -19,6 +20,9 @@ const {
   moveLeft, moveRight,
   switchSystemKeyboard,
   hideKeyboard,
+  setText,
+  getText,
+  hideStandardKeyboard
 } = CustomKeyboardKit;
 
 export {
@@ -27,6 +31,8 @@ export {
   moveLeft, moveRight,
   switchSystemKeyboard,
   hideKeyboard,
+  setText,
+  getText
 };
 
 const keyboardTypeRegistry = {};
@@ -57,25 +63,56 @@ export class CustomTextInput extends Component {
   }
 
   componentDidMount() {
-    install(findNodeHandle(this.input), this.props.customKeyboardType);
-  }
-
-  componentWillReceiveProps(newProps) {
-    if (newProps.customKeyboardType !== this.props.customKeyboardType) {
-      install(findNodeHandle(this.input), newProps.customKeyboardType);
+    if (Platform.OS === 'ios') {
+      setTimeout(() => {
+        const nativeHandle = findNodeHandle(this.input)
+        if (nativeHandle) {
+          install(nativeHandle, 'empty');
+        }
+      }, 100)
     }
   }
+
+  componentWillUnmount() {
+    if (Platform.OS === 'ios') {
+      uninstall(findNodeHandle(this.input))
+    }
+  }
+
+  // componentWillReceiveProps(newProps) {
+  //   if (newProps.customKeyboardType !== this.props.customKeyboardType) {
+  //     install(findNodeHandle(this.input), newProps.customKeyboardType);
+  //   }
+  // }
 
   onRef = ref => {
     this.input = ref;
   }
 
+  focus = () => {
+    if (this.input.__isMounted && !this.input.isFocused()) {
+      this.input.focus()
+    }
+  }
+
+  blur = () => {
+    if (this.input.__isMounted && this.input.isFocused()) {
+      this.input.blur()
+    }
+  }
+
+  hideStandardKeyboard = () => {
+    hideStandardKeyboard(findNodeHandle(this.input))
+  }
+
+  getTag = () => {
+    return findNodeHandle(this.input)
+  }
+
   render() {
     const { customKeyboardType, ...others } = this.props;
     return (
-      <View>
-        <TextInput {...others} ref={this.onRef} />
-      </View>
+      <TextInput {...others} ref={this.onRef} />
     );
   }
 }

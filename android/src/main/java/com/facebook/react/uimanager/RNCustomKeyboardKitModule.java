@@ -64,7 +64,7 @@ public class RNCustomKeyboardKitModule extends ReactContextBaseJavaModule {
       try {
         edit = (ReactEditText) uii.getNativeViewHierarchyManager().resolveView(id);
       } catch (IllegalViewOperationException e) {
-
+        Log.e("CustomKeyboard", e.toString());
       }
     }
 
@@ -84,10 +84,16 @@ public class RNCustomKeyboardKitModule extends ReactContextBaseJavaModule {
           }
 
           edit.setTag(TAG_ID, createCustomKeyboardKit(activity, tag, type));
+          
+          final View.OnFocusChangeListener prevListener = edit.getOnFocusChangeListener();
 
           edit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(final View v, boolean hasFocus) {
+              // Keep the original onFocus prop of TextInput
+              if (prevListener != null) {
+                prevListener.onFocusChange(v, hasFocus);
+              }
               if (hasFocus) {
                 View keyboard = (View)edit.getTag(TAG_ID);
                 if (keyboard.getParent() == null) {
@@ -181,6 +187,42 @@ public class RNCustomKeyboardKitModule extends ReactContextBaseJavaModule {
         int end = Math.max(edit.getSelectionEnd(), 0);
         edit.getText().replace(Math.min(start, end), Math.max(start, end),
                 text, 0, text.length());
+
+      }
+    });
+  }
+
+  @ReactMethod
+  public void setText(final int tag, final String text) {
+    UiThreadUtil.runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        final Activity activity = getCurrentActivity();
+        final ReactEditText edit = getEditById(tag);
+        if (edit == null) {
+          return;
+        }
+
+        edit.setText(text);
+
+        // Set Cursor to the end
+        edit.setSelection(text.length());
+      }
+    });
+  }
+
+  @ReactMethod
+  public void getText(final int tag, final Promise promise) {
+    UiThreadUtil.runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        final Activity activity = getCurrentActivity();
+        final ReactEditText edit = getEditById(tag);
+        if (edit == null) {
+          return;
+        }
+
+        promise.resolve(edit.getText().toString());
       }
     });
   }
@@ -314,5 +356,11 @@ public class RNCustomKeyboardKitModule extends ReactContextBaseJavaModule {
         }
       }
     });
+  }
+
+  @ReactMethod
+  public  void hideStandardKeyboard(final int tag) {
+    final ReactEditText edit = getEditById(tag);
+    ((InputMethodManager) getReactApplicationContext().getSystemService(Activity.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(edit.getWindowToken(), 0);
   }
 }
