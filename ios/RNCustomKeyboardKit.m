@@ -2,7 +2,7 @@
 #import "RNCustomKeyboardKit.h"
 #import "RCTBridge+Private.h"
 #import "RCTUIManager.h"
-#import <RCTText/RCTSinglelineTextInputView.h>
+#import <React/RCTSinglelineTextInputView.h>
 
 @implementation RNCustomKeyboardKit
 
@@ -17,11 +17,13 @@ RCT_EXPORT_MODULE(CustomKeyboardKit)
 
 RCT_EXPORT_METHOD(install:(nonnull NSNumber *)reactTag withType:(nonnull NSString *)keyboardType)
 {
+  UIView* inputView = [[RCTRootView alloc] initWithBridge:_bridge
+                                            moduleName:@"CustomKeyboardKit"
+                                    initialProperties:@{ @"tag": reactTag, @"type": keyboardType }];
+                                    	
   RCTSinglelineTextInputView *view = (RCTSinglelineTextInputView*)[_bridge.uiManager viewForReactTag:reactTag];
-  UITextField *textView = view.backedTextInputView;
-  textView.inputView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 0, 0)];
-  textView.inputAccessoryView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 0, 0)];
-  [textView reloadInputViews];
+  [view.backedTextInputView setInputAccessoryView:inputView];
+  [view reloadInputViews];
 }
 
 RCT_EXPORT_METHOD(uninstall:(nonnull NSNumber *)reactTag)
