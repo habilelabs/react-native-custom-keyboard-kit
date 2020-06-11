@@ -2,7 +2,8 @@
 #import "RNCustomKeyboardKit.h"
 #import "RCTBridge+Private.h"
 #import "RCTUIManager.h"
-#import <React/RCTSinglelineTextInputView.h>
+#import <React/RCTMultilineTextInputView.h>
+#import <React/RCTUITextView.h>
 
 @implementation RNCustomKeyboardKit
 
@@ -15,35 +16,48 @@
 
 RCT_EXPORT_MODULE(CustomKeyboardKit)
 
-RCT_EXPORT_METHOD(install:(nonnull NSNumber *)reactTag withType:(nonnull NSString *)keyboardType)
+RCT_EXPORT_METHOD(install:(nonnull NSNumber *)reactTag)
 {
+  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:@{@"reactTag": reactTag}];
   UIView* inputView = [[RCTRootView alloc] initWithBridge:_bridge
                                             moduleName:@"CustomKeyboardKit"
-                                    initialProperties:@{ @"tag": reactTag, @"type": keyboardType }];
-                                    	
-  RCTSinglelineTextInputView *view = (RCTSinglelineTextInputView*)[_bridge.uiManager viewForReactTag:reactTag];
-  [view.backedTextInputView setInputAccessoryView:inputView];
-  [view reloadInputViews];
+                                    initialProperties:@{@"tag": reactTag}];
+
+  RCTMultilineTextInputView *view = (RCTMultilineTextInputView*)[_bridge.uiManager viewForReactTag:reactTag];
+  RCTUITextView *textView = (RCTUITextView *)view.backedTextInputView;
+  inputView.frame = CGRectMake(0, 0, 320, 320);
+  [textView setInputView:inputView];
+}
+
+- (void)keyboardWillShow:(NSNotification *)notification {
+  NSNumber *reactTag = [notification.userInfo objectForKey:@"reactTag"];
+  CGSize keyboardSize = [[[notification userInfo] objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue].size;
+  RCTMultilineTextInputView *textInput = (RCTMultilineTextInputView*)[_bridge.uiManager viewForReactTag:reactTag];
+  RCTUITextView *textView = (RCTUITextView *)textInput.backedTextInputView;
+  UIView *inputView = textInput.inputView;
+  inputView.frame = CGRectMake(0, 0, keyboardSize.width, keyboardSize.height);
+  [textView setInputView:inputView];
 }
 
 RCT_EXPORT_METHOD(uninstall:(nonnull NSNumber *)reactTag)
 {
-  RCTSinglelineTextInputView *view = [_bridge.uiManager viewForReactTag:reactTag];
+  RCTMultilineTextInputView *view = (RCTMultilineTextInputView *)[_bridge.uiManager viewForReactTag:reactTag];
   UITextField *textView = view.backedTextInputView;
   textView.inputView = nil;
   textView.inputAccessoryView = nil;
   [textView reloadInputViews];
+  [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillShowNotification object: nil];
 }
 
 RCT_EXPORT_METHOD(insertText:(nonnull NSNumber *)reactTag withText:(NSString*)text) {
-  RCTSinglelineTextInputView *view = (RCTSinglelineTextInputView*)[_bridge.uiManager viewForReactTag:reactTag];
+  RCTMultilineTextInputView *view = (RCTMultilineTextInputView*)[_bridge.uiManager viewForReactTag:reactTag];
   UITextField *textView = view.backedTextInputView;
 
   [textView replaceRange:textView.selectedTextRange withText:text];
 }
 
 RCT_EXPORT_METHOD(setText:(nonnull NSNumber *)reactTag withText:(NSString*)text) {
-  RCTSinglelineTextInputView *view = (RCTSinglelineTextInputView*)[_bridge.uiManager viewForReactTag:reactTag];
+  RCTMultilineTextInputView *view = (RCTMultilineTextInputView*)[_bridge.uiManager viewForReactTag:reactTag];
   UITextField *textView = view.backedTextInputView;
   [textView setText:text];
   UITextRange* range = textView.selectedTextRange;
@@ -52,22 +66,22 @@ RCT_EXPORT_METHOD(setText:(nonnull NSNumber *)reactTag withText:(NSString*)text)
 
 RCT_EXPORT_METHOD(getText:(nonnull NSNumber *)reactTag  resolver:(RCTPromiseResolveBlock)resolve
                 rejecter:(RCTPromiseRejectBlock)reject) {
-  RCTSinglelineTextInputView *view = (RCTSinglelineTextInputView*)[_bridge.uiManager viewForReactTag:reactTag];
+  RCTMultilineTextInputView *view = (RCTMultilineTextInputView*)[_bridge.uiManager viewForReactTag:reactTag];
   UITextField *textView = view.backedTextInputView;
   resolve(textView.text);
 }
 
 RCT_EXPORT_METHOD(hideStandardKeyboard:(nonnull NSNumber *)reactTag) {
-  RCTSinglelineTextInputView *view = (RCTSinglelineTextInputView*)[_bridge.uiManager viewForReactTag:reactTag];
+  RCTMultilineTextInputView *view = (RCTMultilineTextInputView*)[_bridge.uiManager viewForReactTag:reactTag];
   UITextField *textView = view.backedTextInputView;
   textView.inputView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 0, 0)];
   [textView reloadInputViews];
 }
 
 RCT_EXPORT_METHOD(backSpace:(nonnull NSNumber *)reactTag) {
-  RCTSinglelineTextInputView *view = (RCTSinglelineTextInputView*)[_bridge.uiManager viewForReactTag:reactTag];
+  RCTMultilineTextInputView *view = (RCTMultilineTextInputView*)[_bridge.uiManager viewForReactTag:reactTag];
   UITextField *textView = view.backedTextInputView;
-    
+
   UITextRange* range = textView.selectedTextRange;
   if ([textView comparePosition:range.start toPosition:range.end] == 0) {
     range = [textView textRangeFromPosition:[textView positionFromPosition:range.start offset:-1] toPosition:range.start];
