@@ -85,7 +85,7 @@ public class RNCustomKeyboardKitModule extends ReactContextBaseJavaModule {
           }
 
           edit.setTag(TAG_ID, createCustomKeyboardKit(activity, tag, type));
-          
+
           final View.OnFocusChangeListener prevListener = edit.getOnFocusChangeListener();
 
           edit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -137,6 +137,7 @@ public class RNCustomKeyboardKitModule extends ReactContextBaseJavaModule {
   ReactRootView rootView = null;
 
   private View createCustomKeyboardKit(Activity activity, int tag, String type) {
+    Log.e("createCustomKeyboardKit------------->>>>>",activity.getResources().getDisplayMetrics().toString());
     RelativeLayout layout = new RelativeLayout(activity);
     rootView = new ReactRootView(this.getReactApplicationContext());
     rootView.setBackgroundColor(Color.WHITE);
@@ -150,10 +151,12 @@ public class RNCustomKeyboardKitModule extends ReactContextBaseJavaModule {
             bundle);
 
     final float scale = activity.getResources().getDisplayMetrics().density;
-    RelativeLayout.LayoutParams lParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Math.round(216*scale));
+    final float screenHeight = activity.getResources().getDisplayMetrics().heightPixels;
+    Log.e("Keyboard height------------->>>>>", "" + screenHeight);
+    RelativeLayout.LayoutParams lParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, Math.round(screenHeight/3) + 200);
     lParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
     layout.addView(rootView, lParams);
-    // activity.addContentView(layout, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+    // activity.addContentView(layout, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.FILL_PARENT));
     return layout;
   }
 
@@ -350,7 +353,7 @@ public class RNCustomKeyboardKitModule extends ReactContextBaseJavaModule {
         if (edit == null) {
           return;
         }
-        
+
         View keyboard = (View)edit.getTag(TAG_ID);
         if (keyboard.getParent() != null) {
           ((ViewGroup) keyboard.getParent()).removeView(keyboard);
