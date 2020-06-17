@@ -32,7 +32,8 @@ export {
     switchSystemKeyboard,
     hideKeyboard,
     setText,
-    getText
+    getText,
+    hideStandardKeyboard
 };
 
 const keyboardTypeRegistry = {};
