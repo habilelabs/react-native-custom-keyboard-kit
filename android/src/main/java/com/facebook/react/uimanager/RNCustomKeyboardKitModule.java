@@ -73,7 +73,7 @@ public class RNCustomKeyboardKitModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void install(final int tag, final String type) {
+  public void install(final int tag, final String type, final int height) {
     UiThreadUtil.runOnUiThread(new Runnable() {
         @Override
         public void run() {
@@ -84,7 +84,7 @@ public class RNCustomKeyboardKitModule extends ReactContextBaseJavaModule {
             return;
           }
 
-          edit.setTag(TAG_ID, createCustomKeyboardKit(activity, tag, type));
+          edit.setTag(TAG_ID, createCustomKeyboardKit(activity, tag, type, height));
 
           final View.OnFocusChangeListener prevListener = edit.getOnFocusChangeListener();
 
@@ -136,7 +136,7 @@ public class RNCustomKeyboardKitModule extends ReactContextBaseJavaModule {
 
   ReactRootView rootView = null;
 
-  private View createCustomKeyboardKit(Activity activity, int tag, String type) {
+  private View createCustomKeyboardKit(Activity activity, int tag, String type, int height) {
     Log.e("createCustomKeyboardKit------------->>>>>",activity.getResources().getDisplayMetrics().toString());
     RelativeLayout layout = new RelativeLayout(activity);
     rootView = new ReactRootView(this.getReactApplicationContext());
@@ -152,8 +152,8 @@ public class RNCustomKeyboardKitModule extends ReactContextBaseJavaModule {
 
     final float scale = activity.getResources().getDisplayMetrics().density;
     final float screenHeight = activity.getResources().getDisplayMetrics().heightPixels;
-    Log.e("Keyboard height------------->>>>>", "" + screenHeight);
-    RelativeLayout.LayoutParams lParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, Math.round(screenHeight/3) + 200);
+    Log.e("Keyboard height------------->>>>>", "" + height);
+    RelativeLayout.LayoutParams lParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, height);
     lParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
     layout.addView(rootView, lParams);
     // activity.addContentView(layout, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.FILL_PARENT));
