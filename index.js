@@ -31,9 +31,9 @@ export {
     moveLeft, moveRight,
     switchSystemKeyboard,
     hideKeyboard,
+    hideStandardKeyboard,
     setText,
-    getText,
-    hideStandardKeyboard
+    getText
 };
 
 const keyboardTypeRegistry = {};
@@ -44,14 +44,18 @@ export function register(type, factory) {
 
 class CustomKeyboardKitContainer extends Component {
     render() {
-        const {tag, type} = this.props;
+        const {tag, type, excluded} = this.props;
         const factory = keyboardTypeRegistry[type];
         if (!factory) {
             console.warn(`Custom keyboard type ${type} not registered.`);
             return null;
         }
         const Comp = factory();
-        return <Comp tag={tag} />;
+        let excludedKeys = [];
+        if(excluded){
+            excludedKeys = JSON.parse(excluded);
+        }
+        return <Comp tag={tag} excluded={excludedKeys}/>;
     }
 }
 

@@ -73,7 +73,7 @@ public class RNCustomKeyboardKitModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void install(final int tag, final String type, final int height) {
+  public void install(final int tag, final String type, final int height, final String excluded) {
     UiThreadUtil.runOnUiThread(new Runnable() {
         @Override
         public void run() {
@@ -84,7 +84,7 @@ public class RNCustomKeyboardKitModule extends ReactContextBaseJavaModule {
             return;
           }
 
-          edit.setTag(TAG_ID, createCustomKeyboardKit(activity, tag, type, height));
+          edit.setTag(TAG_ID, createCustomKeyboardKit(activity, tag, type, height, excluded));
 
           final View.OnFocusChangeListener prevListener = edit.getOnFocusChangeListener();
 
@@ -136,7 +136,7 @@ public class RNCustomKeyboardKitModule extends ReactContextBaseJavaModule {
 
   ReactRootView rootView = null;
 
-  private View createCustomKeyboardKit(Activity activity, int tag, String type, int height) {
+  private View createCustomKeyboardKit(Activity activity, int tag, String type, int height, String excluded) {
     Log.e("createCustomKeyboardKit------------->>>>>",activity.getResources().getDisplayMetrics().toString());
     RelativeLayout layout = new RelativeLayout(activity);
     rootView = new ReactRootView(this.getReactApplicationContext());
@@ -145,6 +145,7 @@ public class RNCustomKeyboardKitModule extends ReactContextBaseJavaModule {
     Bundle bundle = new Bundle();
     bundle.putInt("tag", tag);
     bundle.putString("type", type);
+    bundle.putString("excluded", excluded);
     rootView.startReactApplication(
             ((ReactApplication) activity.getApplication()).getReactNativeHost().getReactInstanceManager(),
             "CustomKeyboardKit",
